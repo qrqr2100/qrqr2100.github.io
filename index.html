@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solo Bare Ground — guardrails &amp; kits for shipping with AI agents</title>
+<meta name="description" content="Eight kits, skills, and guardrails for building real software with Claude Code and other AI coding agents. Built and dogfooded by a one-person shop.">
+<style>
+  :root {
+    --ground:      #11151c;
+    --raised:      #171c25;
+    --raised-2:    #1e2530;
+    --line:        #2a3340;
+    --line-soft:   #222a35;
+    --ink:         #eef1f5;
+    --ink-soft:    #b7c0cd;
+    --ink-mute:    #7d8794;
+    --accent:      #eaa640;
+    --accent-ink:  #12161d;
+    --pass:        #5aa878;
+    --block:       #cf6b60;
+    --paper-tint:  rgba(234,166,64,.09);
+    --card-glow:   0 1px 0 rgba(255,255,255,.02) inset, 0 2px 24px rgba(0,0,0,.35);
+    --maxw: 1080px;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground:     #eceef2;
+      --raised:     #f6f7f9;
+      --raised-2:   #ffffff;
+      --line:       #d3d8df;
+      --line-soft:  #e0e4ea;
+      --ink:        #1a2029;
+      --ink-soft:   #444e5b;
+      --ink-mute:   #6b7480;
+      --accent:     #b06f12;
+      --accent-ink: #fff;
+      --pass:       #3f8560;
+      --block:      #b1493f;
+      --paper-tint: rgba(176,111,18,.07);
+      --card-glow:  0 1px 0 rgba(255,255,255,.7) inset, 0 1px 14px rgba(20,30,45,.06);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#11151c; --raised:#171c25; --raised-2:#1e2530; --line:#2a3340; --line-soft:#222a35;
+    --ink:#eef1f5; --ink-soft:#b7c0cd; --ink-mute:#7d8794; --accent:#eaa640; --accent-ink:#12161d;
+    --pass:#5aa878; --block:#cf6b60; --paper-tint:rgba(234,166,64,.09);
+    --card-glow:0 1px 0 rgba(255,255,255,.02) inset, 0 2px 24px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"] {
+    --ground:#eceef2; --raised:#f6f7f9; --raised-2:#ffffff; --line:#d3d8df; --line-soft:#e0e4ea;
+    --ink:#1a2029; --ink-soft:#444e5b; --ink-mute:#6b7480; --accent:#b06f12; --accent-ink:#fff;
+    --pass:#3f8560; --block:#b1493f; --paper-tint:rgba(176,111,18,.07);
+    --card-glow:0 1px 0 rgba(255,255,255,.7) inset, 0 1px 14px rgba(20,30,45,.06);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+  ::selection { background: var(--accent); color: var(--accent-ink); }
+
+  /* ---- top bar ---- */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0; gap: 16px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .brand {
+    font-family: var(--mono); font-weight: 700; font-size: 15px;
+    letter-spacing: .02em; display: flex; align-items: center; gap: 10px;
+  }
+  .brand .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 4px var(--paper-tint); flex: none; }
+  .top nav { display: flex; gap: 22px; font-family: var(--mono); font-size: 13px; }
+  .top nav a { color: var(--ink-mute); text-decoration: none; transition: color .15s; }
+  .top nav a:hover { color: var(--ink); }
+  @media (max-width: 620px){ .top nav { display: none; } }
+
+  /* ---- hero ---- */
+  .hero { padding: 76px 0 44px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 22px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before {
+    content: ""; width: 26px; height: 1px; background: var(--accent); opacity: .6;
+  }
+  h1 {
+    font-family: var(--mono); font-weight: 700;
+    font-size: clamp(30px, 5.4vw, 54px); line-height: 1.08;
+    letter-spacing: -0.015em; margin: 0 0 24px; text-wrap: balance;
+    max-width: 16ch;
+  }
+  h1 .hl { color: var(--accent); }
+  .lede {
+    font-size: clamp(17px, 2.1vw, 20px); color: var(--ink-soft);
+    max-width: 54ch; margin: 0 0 34px; line-height: 1.55;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn {
+    font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: .01em;
+    text-decoration: none; padding: 12px 20px; border-radius: 9px;
+    display: inline-flex; align-items: center; gap: 9px; transition: transform .12s, box-shadow .15s, background .15s;
+  }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--paper-tint); }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .hero-meta {
+    margin-top: 40px; font-family: var(--mono); font-size: 12.5px; color: var(--ink-mute);
+    display: flex; flex-wrap: wrap; gap: 8px 20px; border-top: 1px solid var(--line-soft); padding-top: 20px;
+  }
+  .hero-meta b { color: var(--ink-soft); font-weight: 600; }
+
+  /* ---- section ---- */
+  .section { padding: 40px 0; }
+  .sec-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
+  .sec-head h2 {
+    font-family: var(--mono); font-size: 18px; font-weight: 700; letter-spacing: .01em; margin: 0;
+  }
+  .sec-head .k {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .sec-head p { margin: 0; color: var(--ink-mute); font-size: 14.5px; flex: 1 1 240px; }
+
+  /* ---- product grid ---- */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 720px){ .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--raised); border: 1px solid var(--line); border-radius: 13px;
+    padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 12px;
+    box-shadow: var(--card-glow); position: relative;
+    transition: border-color .15s, transform .12s;
+  }
+  .card:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); transform: translateY(-2px); }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .card h3 { font-family: var(--mono); font-size: 16.5px; font-weight: 700; margin: 0; letter-spacing: -0.01em; line-height: 1.25; }
+  .chip {
+    font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex: none;
+    border: 1px solid var(--line);
+  }
+  .chip.free { color: var(--pass); border-color: color-mix(in srgb, var(--pass) 40%, var(--line)); }
+  .chip.paid { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: var(--paper-tint); }
+  .card p { margin: 0; color: var(--ink-soft); font-size: 14.5px; line-height: 1.5; flex: 1; }
+  .card-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .card-links a {
+    font-family: var(--mono); font-size: 12.5px; text-decoration: none; color: var(--ink-mute);
+    padding: 6px 11px; border: 1px solid var(--line-soft); border-radius: 7px;
+    display: inline-flex; align-items: center; gap: 6px; transition: color .15s, border-color .15s;
+  }
+  .card-links a:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+  .card-links a.get { color: var(--ink); border-color: var(--line); }
+  .card-links a.get:hover { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+
+  /* ---- how it fits ---- */
+  .pipe {
+    display: flex; flex-wrap: wrap; gap: 10px; font-family: var(--mono); font-size: 12.5px;
+    color: var(--ink-mute); margin-top: 8px;
+  }
+  .pipe span { display: inline-flex; align-items: center; gap: 10px; }
+  .pipe span::after { content: "→"; color: var(--accent); opacity: .55; }
+  .pipe span:last-child::after { content: ""; }
+
+  /* ---- who ---- */
+  .who {
+    border: 1px solid var(--line); border-radius: 14px; background: var(--raised);
+    padding: 34px; margin: 12px 0 8px; box-shadow: var(--card-glow);
+  }
+  .who h2 { font-family: var(--mono); font-size: 18px; margin: 0 0 14px; }
+  .who p { margin: 0 0 14px; color: var(--ink-soft); max-width: 62ch; }
+  .who .quiet { color: var(--ink-mute); font-size: 14px; }
+
+  /* ---- footer ---- */
+  footer { border-top: 1px solid var(--line-soft); margin-top: 30px; padding: 30px 0 60px; }
+  .foot-row { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .foot-links { display: flex; gap: 20px; font-family: var(--mono); font-size: 13px; }
+  .foot-links a { color: var(--ink-mute); text-decoration: none; }
+  .foot-links a:hover { color: var(--accent); }
+  .foot-note { font-family: var(--mono); font-size: 12px; color: var(--ink-mute); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="top">
+      <div class="brand"><span class="dot"></span> SOLO&nbsp;BARE&nbsp;GROUND</div>
+      <nav>
+        <a href="#guardrails">Guardrails</a>
+        <a href="#kits">Kits &amp; skills</a>
+        <a href="#who">Who</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <p class="eyebrow">Tools for building with AI coding agents</p>
+      <h1>AI agents write fast. These make what they write <span class="hl">safe to ship.</span></h1>
+      <p class="lede">Eight kits, skills, and guardrails for Claude Code and other AI coding agents &mdash; the checks that catch what an agent gets wrong before it merges, and the setup that makes it more capable in the first place. Built and run in production by a one-person shop.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#guardrails">Browse the guardrails</a>
+        <a class="btn btn-ghost" href="#kits">See the kits</a>
+      </div>
+      <div class="hero-meta">
+        <span><b>8</b> released</span>
+        <span><b>6</b> free</span>
+        <span><b>2</b> paid ($9 &amp; $14)</span>
+        <span>Claude Code &middot; MIT where open</span>
+      </div>
+    </section>
+
+    <section class="section" id="guardrails">
+      <div class="sec-head">
+        <span class="k">01 / Guardrails</span>
+        <h2>Catch what the agent gets wrong &mdash; before it ships</h2>
+        <p>Deterministic checks and review discipline. An agent moves fast; these decide what actually gets to merge.</p>
+      </div>
+      <div class="grid">
+
+        <div class="card">
+          <div class="card-top">
+            <h3>Ship Pilot</h3>
+            <span class="chip paid">$14</span>
+          </div>
+          <p>The ship gate, wired into your repo. Deterministic gates run on every commit &mdash; MCP config, CI workflow, model pins, prompt-injection surface &mdash; and block the push when something is off. Not a template; a machine that runs.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/ship-pilot-kit">Get it &mdash; $14</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <h3>Agent Supervisor</h3>
+            <span class="chip free">Free &middot; PWYW</span>
+          </div>
+          <p>Guardrails for autonomous agents: restraint, scope-lint, budget limits, an approval inbox, dead-letter escalation. Supervise before and during a run &mdash; not in the postmortem.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/agent-supervisor">Get it &mdash; free</a>
+            <a href="https://github.com/qrqr2100/agent-supervisor">Source</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <h3>PR Review Craft Kit</h3>
+            <span class="chip free">Free</span>
+          </div>
+          <p>Review the code your agent wrote the way a senior would &mdash; five axes, severity-rated, no rubber-stamps. Turns "looks fine" into a real read.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/pr-review-craft-kit">Get it &mdash; free</a>
+            <a href="https://github.com/qrqr2100/pr-review-craft-kit">Source</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <h3>Windows Encoding Preflight Lint</h3>
+            <span class="chip free">Free &middot; PWYW</span>
+          </div>
+          <p>AI-written scripts break on Korean and Japanese Windows. This finds the encoding traps &mdash; BOM, CRLF, missing <code>chcp</code> &mdash; and auto-fixes them before they reach a user.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/windows-encoding-preflight-lint">Get it &mdash; free</a>
+            <a href="https://github.com/qrqr2100/windows-encoding-preflight-lint">Source</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <h3>Ship Gate Kit</h3>
+            <span class="chip free">Free</span>
+          </div>
+          <p>A pre-ship checklist your agent can't skip. The plain, open starting point for a release gate &mdash; catch the obvious misses before they merge.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/ship-gate-kit">Get it &mdash; free</a>
+            <a href="https://github.com/qrqr2100/ship-gate-kit">Source</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section" id="kits">
+      <div class="sec-head">
+        <span class="k">02 / Kits &amp; skills</span>
+        <h2>Make the agent more capable in the first place</h2>
+        <p>Setup, synthesis, and memory &mdash; the craft that makes an agent worth trusting with real work.</p>
+      </div>
+      <div class="grid">
+
+        <div class="card">
+          <div class="card-top">
+            <h3>Claude Code Setup Kit</h3>
+            <span class="chip free">Free</span>
+          </div>
+          <p>The copy-paste starting point for Claude Code &mdash; the config, skills, and habits worth having on day one instead of learning the hard way.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/claude-code-setup-kit">Get it &mdash; free</a>
+            <a href="https://github.com/qrqr2100/claude-code-setup-kit">Source</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <h3>Customer Memory Pyramid</h3>
+            <span class="chip paid">$9</span>
+          </div>
+          <p>A skill that gives Claude Code a durable, four-layer memory of each customer &mdash; so what you know survives past a single chat window and compaction.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/customer-memory-pyramid">Get it &mdash; $9</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <h3>3-Layer Synthesis Kit</h3>
+            <span class="chip free">Free</span>
+          </div>
+          <p>Turn scattered notes into one diagram. Three passes &mdash; the whole, the atoms, and the gap between them &mdash; so the synthesis is generative, not just tidy.</p>
+          <div class="card-links">
+            <a class="get" href="https://tkwk5.gumroad.com/l/3layer-synthesis-kit">Get it &mdash; free</a>
+            <a href="https://github.com/qrqr2100/3layer-synthesis-kit">Source</a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section" id="who">
+      <div class="who">
+        <h2>Who makes this</h2>
+        <p>Solo Bare Ground is a one-person shop. Everything here is dogfood: the guardrails are the ones I run on my own agents, day and night, on real work. If a check made it into a kit, it's because it caught something I would have shipped otherwise.</p>
+        <p class="quiet">Open kits are MIT. Paid kits keep the source private and come with the same guarantee &mdash; if it doesn't do what the page says, it isn't finished yet.</p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="foot-row">
+        <div class="foot-links">
+          <a href="https://tkwk5.gumroad.com">Gumroad</a>
+          <a href="https://github.com/qrqr2100">GitHub</a>
+          <a href="https://x.com/solobareground">X / @solobareground</a>
+        </div>
+        <div class="foot-note">Solo Bare Ground &middot; built with AI agents, shipped with guardrails</div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Respect an explicit theme toggle if a host stamps data-theme; otherwise follow OS.
+    // No external calls. Purely progressive.
+    (function () {
+      try {
+        var stored = localStorage.getItem('sbg-theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
+</html>
